@@ -1,1 +1,1763 @@
-<!DOCTYPE html><html lang="pt-BR"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>TecnoVision - Gestão de Cabos Inteligente</title>    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    <style>        /* Estilos CSS (mantidos do código anterior) */        * {            margin: 0;            padding: 0;            box-sizing: border-box;        }        body {            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;            background-color: #F5F5F5;            color: #333;        }        .app {            min-height: 100vh;            display: flex;            flex-direction: column;        }        /* Header */        .header {            background-color: #FFFFFF;            padding: 1rem 2rem;            box-shadow: 0 2px 4px rgba(0,0,0,0.1);            border-bottom: 3px solid #F38028;        }        .header-content {            display: flex;            align-items: center;            justify-content: space-between;        }        .header-left {            display: flex;            align-items: center;            gap: 1rem;        }        .logo {            color: #F38028;            font-size: 2rem;            font-weight: bold;            margin: 0;        }        .subtitle {            color: #666;            font-size: 1rem;            margin: 0;        }        .header-actions {            display: flex;            align-items: center;            gap: 1rem;        }        .notification-bell {            position: relative;            background: none;            border: none;            font-size: 1.5rem;            cursor: pointer;            color: #F38028;        }        .notification-count {            position: absolute;            top: -8px;            right: -8px;            background-color: #dc3545;            color: white;            border-radius: 50%;            width: 20px;            height: 20px;            font-size: 0.8rem;            display: flex;            align-items: center;            justify-content: center;        }        /* Layout */        .app-body {            display: flex;            flex: 1;        }        .sidebar {            width: 250px;            background-color: #FFFFFF;            box-shadow: 2px 0 4px rgba(0,0,0,0.1);            padding: 1.5rem 0;        }        .sidebar-nav {            display: flex;            flex-direction: column;            gap: 0.5rem;        }        .nav-item {            display: flex;            align-items: center;            gap: 0.75rem;            padding: 1rem 1.5rem;            background: none;            border: none;            text-align: left;            cursor: pointer;            transition: all 0.3s ease;            font-size: 1rem;            color: #333;        }        .nav-item:hover {            background-color: #F5F5F5;        }        .nav-item.active {            background-color: #F38028;            color: white;            border-right: 4px solid #d66d1a;        }        .nav-icon {            font-size: 1.2rem;        }        .main-content {            flex: 1;            padding: 2rem;            overflow-y: auto;        }        /* Search Bar */        .search-container {            background-color: #FFFFFF;            padding: 1rem 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);            margin-bottom: 1.5rem;            display: flex;            gap: 1rem;            align-items: center;        }        .search-input {            flex: 1;            padding: 0.75rem;            border: 2px solid #ddd;            border-radius: 6px;            font-size: 1rem;            transition: border-color 0.3s ease;        }        .search-input:focus {            outline: none;            border-color: #F38028;        }        .search-button {            background-color: #F38028;            color: white;            border: none;            padding: 0.75rem 1rem;            border-radius: 6px;            cursor: pointer;            font-size: 1rem;        }        .clear-search {            background-color: #666;            color: white;            border: none;            padding: 0.75rem 1rem;            border-radius: 6px;            cursor: pointer;            font-size: 1rem;        }        /* Dashboard */        .dashboard {            display: flex;            flex-direction: column;            gap: 2rem;        }        .dashboard-header {            display: flex;            justify-content: space-between;            align-items: center;            background-color: #FFFFFF;            padding: 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);        }        .dashboard-header h2 {            color: #333;            margin: 0;            flex: 1;        }        .dashboard-actions {            display: flex;            gap: 1rem;        }        .chat-button, .export-button {            background-color: #F38028;            color: white;            border: none;            padding: 0.75rem 1.5rem;            border-radius: 6px;            cursor: pointer;            font-size: 1rem;            transition: background-color 0.3s ease;        }        .export-button {            background-color: #28a745;        }        .chat-button:hover {            background-color: #d66d1a;        }        .export-button:hover {            background-color: #218838;        }        /* Alerts */        .alerts-container {            display: flex;            flex-direction: column;            gap: 1rem;        }        .alert {            padding: 1rem 1.5rem;            border-radius: 8px;            display: flex;            align-items: center;            justify-content: space-between;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);        }        .alert-critical {            background-color: #f8d7da;            border-left: 4px solid #dc3545;            color: #721c24;        }        .alert-warning {            background-color: #fff3cd;            border-left: 4px solid #ffc107;            color: #856404;        }        .alert-info {            background-color: #d1ecf1;            border-left: 4px solid #17a2b8;            color: #0c5460;        }        .alert-message {            flex: 1;        }        .alert-action {            background-color: transparent;            border: 2px solid currentColor;            color: inherit;            padding: 0.5rem 1rem;            border-radius: 4px;            cursor: pointer;            font-size: 0.9rem;        }        /* Filters */        .filters {            background-color: #FFFFFF;            padding: 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);        }        .filters h3 {            color: #F38028;            margin-bottom: 1rem;        }        .filters-grid {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));            gap: 1rem;            align-items: end;        }        .filter-group {            display: flex;            flex-direction: column;            gap: 0.5rem;        }        .filter-group label {            font-weight: 600;            color: #333;            font-size: 0.9rem;        }        .filter-group select {            padding: 0.75rem;            border: 2px solid #ddd;            border-radius: 6px;            font-size: 1rem;            transition: border-color 0.3s ease;        }        .filter-group select:focus {            outline: none;            border-color: #F38028;        }        .clear-filters {            background-color: #666;            color: white;            border: none;            padding: 0.75rem 1.5rem;            border-radius: 6px;            cursor: pointer;            font-size: 1rem;            transition: background-color 0.3s ease;        }        .clear-filters:hover {            background-color: #555;        }        /* KPIs */        .kpis {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));            gap: 1.5rem;        }        .kpi-card {            background-color: #FFFFFF;            padding: 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);            text-align: center;        }        .kpi-title {            font-size: 1.1rem;            font-weight: 600;            color: #333;            margin-bottom: 1rem;        }        .kpi-value {            font-size: 2rem;            font-weight: bold;            margin-bottom: 0.5rem;        }        .kpi-description {            font-size: 0.9rem;            color: #666;        }        .health-indicator {            width: 60px;            height: 60px;            border-radius: 50%;            margin: 0 auto 1rem;            display: flex;            align-items: center;            justify-content: center;            font-size: 1.5rem;            color: white;            font-weight: bold;        }        .health-verde { background-color: #28a745; }        .health-amarelo { background-color: #ffc107; }        .health-vermelho { background-color: #dc3545; }        .alert-icon {            color: #F38028;            font-size: 2rem;            margin-bottom: 0.5rem;        }        /* Charts */        .charts-section {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));            gap: 2rem;            margin-bottom: 2rem;        }        .chart-container {            background-color: #FFFFFF;            padding: 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);        }        .chart-container h3 {            color: #F38028;            margin-bottom: 1rem;        }        /* Stock Table */        .stock-table-container {            background-color: #FFFFFF;            padding: 1.5rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);        }        .stock-table-header {            display: flex;            justify-content: space-between;            align-items: center;            margin-bottom: 1.5rem;        }        .stock-table-header h3 {            color: #F38028;            margin: 0;        }        .table-wrapper {            overflow-x: auto;        }        .stock-table {            width: 100%;            border-collapse: collapse;            font-size: 0.9rem;        }        .stock-table th,        .stock-table td {            padding: 1rem;            text-align: left;            border-bottom: 1px solid #ddd;        }        .stock-table th {            background-color: #F5F5F5;            font-weight: 600;            color: #333;        }        .stock-table tbody tr {            cursor: pointer;            transition: background-color 0.3s ease;        }        .stock-table tbody tr:hover {            background-color: #f8f9fa;        }        .status-badge {            padding: 0.25rem 0.75rem;            border-radius: 20px;            font-size: 0.8rem;            font-weight: 600;            text-align: center;        }        .status-disponivel { background-color: #d4edda; color: #155724; }        .status-locados { background-color: #d1ecf1; color: #0c5460; }        .status-extraviados { background-color: #f8d7da; color: #721c24; }        .status-manutencao { background-color: #fff3cd; color: #856404; }        .health-badge {            width: 20px;            height: 20px;            border-radius: 50%;            display: inline-block;        }        .health-badge.Verde { background-color: #28a745; }        .health-badge.Amarelo { background-color: #ffc107; }        .health-badge.Vermelho { background-color: #dc3545; }        /* Pagination */        .pagination {            display: flex;            justify-content: center;            align-items: center;            gap: 1rem;            margin-top: 1rem;        }        .pagination button {            background-color: #F38028;            color: white;            border: none;            padding: 0.5rem 1rem;            border-radius: 4px;            cursor: pointer;        }        .pagination button:disabled {            background-color: #ccc;            cursor: not-allowed;        }        .pagination-info {            color: #666;            font-size: 0.9rem;        }        /* Reports Section */        .reports-dashboard {            display: flex;            flex-direction: column;            gap: 2rem;        }        .report-cards {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));            gap: 1.5rem;        }        .report-card {            background-color: #FFFFFF;            padding: 2rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);            cursor: pointer;            transition: transform 0.3s ease, box-shadow 0.3s ease;            text-align: center;            border-top: 4px solid #F38028;        }        .report-card:hover {            transform: translateY(-4px);            box-shadow: 0 4px 16px rgba(0,0,0,0.15);        }        .report-card h3 {            color: #F38028;            margin-bottom: 1rem;        }        .report-card p {            color: #666;        }        .report-icon {            font-size: 3rem;            margin-bottom: 1rem;        }        /* Modal */        .modal-overlay {            position: fixed;            top: 0;            left: 0;            right: 0;            bottom: 0;            background-color: rgba(0,0,0,0.5);            display: flex;            align-items: center;            justify-content: center;            z-index: 1000;        }        .modal {            background-color: #FFFFFF;            border-radius: 8px;            max-width: 800px;            width: 90%;            max-height: 90vh;            overflow-y: auto;            box-shadow: 0 10px 30px rgba(0,0,0,0.3);        }        .modal-header {            padding: 1.5rem;            border-bottom: 1px solid #ddd;            display: flex;            justify-content: space-between;            align-items: center;        }        .modal-header h3 {            color: #F38028;            margin: 0;        }        .close-button {            background: none;            border: none;            font-size: 1.5rem;            cursor: pointer;            color: #666;        }        .modal-body {            padding: 1.5rem;        }        .modal-section {            margin-bottom: 2rem;        }        .modal-section h4 {            color: #333;            margin-bottom: 1rem;            padding-bottom: 0.5rem;            border-bottom: 2px solid #F38028;        }        .detail-grid {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));            gap: 1rem;            margin-bottom: 1rem;        }        .detail-item {            background-color: #F5F5F5;            padding: 1rem;            border-radius: 6px;        }        .detail-label {            font-weight: 600;            color: #666;            font-size: 0.9rem;        }        .detail-value {            color: #333;            font-size: 1rem;            margin-top: 0.25rem;        }        .history-list {            list-style: none;            padding: 0;        }        .history-item {            background-color: #F5F5F5;            padding: 1rem;            margin-bottom: 0.5rem;            border-radius: 6px;            border-left: 4px solid #F38028;        }        .edit-section {            margin-top: 2rem;            padding: 1.5rem;            background-color: #f8f9fa;            border-radius: 6px;        }        .edit-input {            width: 100%;            padding: 0.75rem;            border: 2px solid #ddd;            border-radius: 6px;            margin-bottom: 1rem;            font-size: 1rem;        }        .edit-input:focus {            outline: none;            border-color: #F38028;        }        .save-button {            background-color: #F38028;            color: white;            border: none;            padding: 0.75rem 1.5rem;            border-radius: 6px;            cursor: pointer;            font-size: 1rem;        }        .save-button:hover {            background-color: #d66d1a;        }        /* Chat Modal */        .chat-modal {            max-width: 500px;            height: 600px;            display: flex;            flex-direction: column;        }        .chat-messages {            flex: 1;            padding: 1rem;            overflow-y: auto;            background-color: #f8f9fa;        }        .chat-message {            margin-bottom: 1rem;            padding: 0.75rem;            border-radius: 8px;            max-width: 80%;        }        .chat-message.ai {            background-color: #F38028;            color: white;            margin-right: auto;        }        .chat-message.user {            background-color: #FFFFFF;            color: #333;            margin-left: auto;            border: 1px solid #ddd;        }        .chat-input-container {            padding: 1rem;            border-top: 1px solid #ddd;            display: flex;            gap: 0.5rem;        }        .chat-input {            flex: 1;            padding: 0.75rem;            border: 2px solid #ddd;            border-radius: 6px;            font-size: 1rem;        }        .chat-send {            background-color: #F38028;            color: white;            border: none;            padding: 0.75rem 1rem;            border-radius: 6px;            cursor: pointer;        }        .section-placeholder {            background-color: #FFFFFF;            padding: 3rem;            border-radius: 8px;            box-shadow: 0 2px 8px rgba(0,0,0,0.1);            text-align: center;        }        .section-placeholder h2 {            color: #F38028;            margin-bottom: 1rem;        }        .section-placeholder p {            color: #666;            font-size: 1.1rem;        }        .hidden {            display: none !important;        }        /* Responsive */        @media (max-width: 768px) {            .app-body {                flex-direction: column;            }            .sidebar {                width: 100%;            }            .sidebar-nav {                flex-direction: row;                overflow-x: auto;            }            .nav-item {                min-width: 120px;            }            .filters-grid {                grid-template-columns: 1fr;            }            .kpis {                grid-template-columns: 1fr;            }            .charts-section {                grid-template-columns: 1fr;            }            .main-content {                padding: 1rem;            }            .dashboard-actions {                flex-direction: column;            }        }    </style></head><body>    <div class="app">        <!-- Header -->        <header class="header">            <div class="header-content">                <div class="header-left">                    <h1 class="logo">TecnoVision</h1>                    <p class="subtitle">Gestão de Cabos Inteligente</p>                </div>                <div class="header-actions">                    <button class="notification-bell" onclick="toggleNotifications()">                        🔔                        <span class="notification-count" id="notification-count">0</span>                    </button>                </div>            </div>        </header>        <div class="app-body">            <!-- Sidebar -->            <aside class="sidebar">                <nav class="sidebar-nav">                    <button class="nav-item active" data-section="dashboard">                        <span class="nav-icon">📊</span>                        <span class="nav-label">Dashboard</span>                    </button>                    <button class="nav-item" data-section="inventario">                        <span class="nav-icon">📦</span>                        <span class="nav-label">Inventário</span>                    </button>                    <button class="nav-item" data-section="relatorios">                        <span class="nav-icon">📈</span>                        <span class="nav-label">Relatórios</span>                    </button>                    <button class="nav-item" data-section="projetos">                        <span class="nav-icon">🏗️</span>                        <span class="nav-label">Projetos</span>                    </button>                    <button class="nav-item" data-section="ia-chat">                        <span class="nav-icon">🤖</span>                        <span class="nav-label">IA Chat</span>                    </button>                </nav>            </aside>            <!-- Main Content -->            <main class="main-content">                <!-- Dashboard Section -->                <div id="dashboard-section" class="section">                    <!-- Search Bar -->                    <div class="search-container">                        <input type="text" class="search-input" id="search-input" placeholder="Buscar por ID, filial, bitola, classe de tensão...">                        <button class="search-button" onclick="performSearch()">🔍 Buscar</button>                        <button class="clear-search" onclick="clearSearch()">Limpar</button>                    </div>                    <div class="dashboard">                        <div class="dashboard-header">                            <h2>Dashboard de Gestão de Cabos</h2>                            <div class="dashboard-actions">                                <button class="export-button" onclick="exportToCSV()">                                    📊 Exportar CSV                                </button>                                <button class="chat-button" onclick="openChatModal()">                                    🤖 Conversar com o Agente IA                                </button>                            </div>                        </div>                        <!-- Alerts -->                        <div class="alerts-container" id="alerts-container">                            <!-- Alertas serão gerados dinamicamente -->                        </div>                        <!-- Filters -->                        <div class="filters">                            <h3>Filtros Avançados</h3>                            <div class="filters-grid">                                <div class="filter-group">                                    <label>FILIAL</label>                                    <select id="filter-filial">                                        <option value="">Todos</option>                                        <option value="SP-SBC">SP-SBC</option>                                        <option value="RJ-DCS">RJ-DCS</option>                                        <option value="MG-CGE">MG-CGE</option>                                        <option value="BA-SSF">BA-SSF</option>                                        <option value="CE-MRU">CE-MRU</option>                                    </select>                                </div>                                <div class="filter-group">                                    <label>BITOLA</label>                                    <select id="filter-bitola">                                        <option value="">Todos</option>                                        <option value="35mm²">35mm²</option>                                        <option value="50mm²">50mm²</option>                                        <option value="70mm²">70mm²</option>                                        <option value="95mm²">95mm²</option>                                        <option value="120mm²">120mm²</option>                                        <option value="240mm²">240mm²</option>                                    </select>                                </div>                                <div class="filter-group">                                    <label>METRAGEM</label>                                    <select id="filter-metragem">                                        <option value="">Todos</option>                                        <option value="6">6m</option>                                        <option value="12.5">12,5m</option>                                        <option value="25">25m</option>                                        <option value="50">50m</option>                                    </select>                                </div>                                <div class="filter-group">                                    <label>CLASSE DE TENSÃO</label>                                    <select id="filter-classe">                                        <option value="">Todos</option>                                        <option value="1kV">1kV</option>                                        <option value="8,7/15kV">8,7/15kV</option>                                        <option value="12/20kV">12/20kV</option>                                        <option value="20/35kV">20/35kV</option>                                    </select>                                </div>                                <div class="filter-group">                                    <label>STATUS</label>                                    <select id="filter-status">                                        <option value="">Todos</option>                                        <option value="Locados">Locados</option>                                        <option value="Disponível">Disponível</option>                                        <option value="Extraviados">Extraviados</option>                                        <option value="Manutenção">Manutenção</option>                                    </select>                                </div>                                <button class="clear-filters" onclick="clearAllFilters()">                                    Limpar Filtros                                </button>                            </div>                        </div>                        <!-- KPIs -->                        <div class="kpis" id="kpis-container">                            <!-- KPIs serão gerados dinamicamente -->                        </div>                        <!-- Charts -->                        <div class="charts-section">                            <div class="chart-container">                                <h3>Distribuição por Status</h3>                                <canvas id="statusChart" width="400" height="200"></canvas>                            </div>                            <div class="chart-container">                                <h3>Saúde da Frota</h3>                                <canvas id="healthChart" width="400" height="200"></canvas>                            </div>                        </div>                        <!-- Stock Table -->                        <div class="stock-table-container">                            <div class="stock-table-header">                                <h3>Tabela de Resumo de Estoque</h3>                                <div class="pagination-info" id="table-info">                                    Mostrando 0 de 0 registros                                </div>                            </div>                            <div class="table-wrapper">                                <table class="stock-table">                                    <thead>                                        <tr>                                            <th>ID Patrimônio</th>                                            <th>Filial</th>                                            <th>Bitola</th>                                            <th>Metros</th>                                            <th>Classe de Tensão</th>                                            <th>Status</th>                                            <th>Saúde IA</th>                                        </tr>                                    </thead>                                    <tbody id="stock-table-body">                                        <!-- Dados serão preenchidos dinamicamente -->                                    </tbody>                                </table>                            </div>                            <div class="pagination" id="pagination">                                <button onclick="changePage(-1)" id="prev-btn">◀ Anterior</button>                                <span class="pagination-info" id="page-info">Página 1 de 1</span>                                <button onclick="changePage(1)" id="next-btn">Próximo ▶</button>                            </div>                        </div>                    </div>                </div>                <!-- Reports Section -->                <div id="relatorios-section" class="section hidden">                    <div class="reports-dashboard">                        <div class="dashboard-header">                            <h2>Relatórios e Analytics</h2>                        </div>                                                <div class="report-cards">                            <div class="report-card" onclick="generateReport('monthly')">                                <div class="report-icon">📅</div>                                <h3>Relatório Mensal</h3>                                <p>Análise completa do desempenho mensal da frota de cabos</p>                            </div>                                                        <div class="report-card" onclick="generateReport('maintenance')">                                <div class="report-icon">🔧</div>                                <h3>Relatório de Manutenção</h3>                                <p>Custos, frequência e tipos de manutenção realizadas</p>                            </div>                                                        <div class="report-card" onclick="generateReport('utilization')">                                <div class="report-icon">📊</div>                                <h3>Taxa de Utilização</h3>                                <p>Análise da utilização dos cabos por filial e projeto</p>                            </div>                                                        <div class="report-card" onclick="generateReport('losses')">                                <div class="report-icon">⚠️</div>                                <h3>Perdas e Extravios</h3>                                <p>Relatório detalhado de cabos extraviados e custos</p>                            </div>                                                        <div class="report-card" onclick="generateReport('health')">                                <div class="report-icon">💚</div>                                <h3>Saúde da Frota</h3>                                <p>Análise predictiva baseada na IA da saúde dos cabos</p>                            </div>                                                        <div class="report-card" onclick="generateReport('financial')">                                <div class="report-icon">💰</div>                                <h3>Análise Financeira</h3>                                <p>ROI, custos operacionais e otimização de investimentos</p>                            </div>                        </div>                    </div>                </div>                <!-- Other Sections -->                <div id="inventario-section" class="section hidden">                    <div class="section-placeholder">                        <h2>Inventário Detalhado</h2>                        <p>Gestão completa do inventário de cabos em desenvolvimento...</p>                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/1adaa3f6-2c14-464f-b1c4-a9e05e99612c.png" alt="Dashboard de inventário com gráficos detalhados mostrando localização de cabos em estoque, filtros avançados e status de cada item em tempo real" />                    </div>                </div>                <div id="projetos-section" class="section hidden">                    <div class="section-placeholder">                        <h2>Gestão de Projetos</h2>                        <p>Alocação e controle de cabos por projeto em desenvolvimento...</p>                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e949813c-9644-4729-9234-2919b8828f43.png" alt="Interface de gestão de projetos mostrando timeline de alocação de cabos, status de projetos ativos e cronograma de retorno de equipamentos" />                    </div>                </div>                <div id="ia-chat-section" class="section hidden">                    <div class="section-placeholder">                        <h2>IA Chat Avançado</h2>                        <p>Assistente inteligente para gestão de cabos em desenvolvimento...</p>                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/027323d7-e0ec-4a52-a925-dd8f67eac7eb.png" alt="Interface de chat com IA mostrando conversas sobre gestão de cabos, análises preditivas e sugestões de otimização em tempo real" />                    </div>                </div>            </main>        </div>    </div>    <!-- Cable Modal -->    <div id="cable-modal" class="modal-overlay hidden">        <div class="modal">            <div class="modal-header">                <h3 id="modal-title">Detalhes do Cabo</h3>                <button class="close-button" onclick="closeCableModal()">&times;</button>            </div>            <div class="modal-body" id="modal-body">                <!-- Conteúdo será preenchido dinamicamente -->            </div>        </div>    </div>    <!-- Chat Modal -->    <div id="chat-modal" class="modal-overlay hidden">        <div class="modal chat-modal">            <div class="modal-header">                <h3>Agente IA - TecnoVision</h3>                <button class="close-button" onclick="closeChatModal()">&times;</button>            </div>            <div class="chat-messages" id="chat-messages">                <div class="chat-message ai">                    Olá! Sou o Agente IA da TecnoVision. Como posso ajudá-lo com a gestão de cabos hoje? Posso fornecer informações sobre estoque, manutenção, extravios e análises preditivas.                </div>            </div>            <div class="chat-input-container">                <input type="text" class="chat-input" id="chat-input" placeholder="Digite sua mensagem...">                <button class="chat-send" onclick="sendMessage()">Enviar</button>            </div>        </div>    </div>    <script>        // Dados simulados e variáveis globais        let allCables = [];        let filteredCables = [];        let currentPage = 1;        const itemsPerPage = 20;        let currentSearch = '';        // Gerar dados simulados        function generateCablesData() {            const filiais = ['SP-SBC', 'RJ-DCS', 'MG-CGE', 'BA-SSF', 'CE-MRU'];            const bitolas = ['35mm²', '50mm²', '70mm²', '95mm²', '120mm²', '240mm²'];            const metragens = [6, 12.5, 25, 50];            const classes = ['1kV', '8,7/15kV', '12/20kV', '20/35kV'];            const statuses = ['Locados', 'Disponível', 'Extraviados', 'Manutenção'];            const saudes = ['Verde', 'Amarelo', 'Vermelho'];            const projetos = ['Projeto Alpha', 'Projeto Beta', 'Projeto Gamma', 'Projeto Delta', 'Projeto Omega'];            const tipos = ['Preventiva', 'Corretiva', 'Preditiva'];            const weightedRandom = (items, weights) => {                const random = Math.random();                let weightSum = 0;                                                for (let i = 0; i < items.length; i++) {                    weightSum += weights[i];                    if (random <= weightSum) {                        return items[i];                    }                }                return items[items.length - 1];            };            const cables = [];                                    for (let i = 1; i <= 500; i++) {                const randomFilial = filiais[Math.floor(Math.random() * filiais.length)];                const randomBitola = bitolas[Math.floor(Math.random() * bitolas.length)];                const randomMetragem = metragens[Math.floor(Math.random() * metragens.length)];                const randomClasse = classes[Math.floor(Math.random() * classes.length)];                                                // Maior probabilidade para "Disponível"                const statusWeights = [0.15, 0.65, 0.1, 0.1];                const randomStatus = weightedRandom(statuses, statusWeights);                                                const randomSaude = saudes[Math.floor(Math.random() * saudes.length)];                // Gerar histórico de uso                const historicoUso = [];                const numUso = Math.floor(Math.random() * 3) + 1;                for (let j = 0; j < numUso; j++) {                    historicoUso.push({                        data: new Date(2023 + Math.random(), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],                        projeto: projetos[Math.floor(Math.random() * projetos.length)],                        duracao: `${Math.floor(Math.random() * 60) + 15} dias`                    });                }                // Gerar histórico de manutenção                const historicoManutencao = [];                const numManutencao = Math.floor(Math.random() * 2) + 1;                for (let j = 0; j < numManutencao; j++) {                    historicoManutencao.push({                        data: new Date(2023 + Math.random(), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],                        tipo: tipos[Math.floor(Math.random() * tipos.length)],                        custo: `R$ ${(Math.random() * 500 + 100).toFixed(2).replace('.', ',')}`                    });                }                cables.push({                    id_patrimonio: `CMT-${randomBitola.replace('mm²', '')}-${String(i).padStart(3, '0')}`,                    filial: randomFilial,                    bitola: randomBitola,                    metros: randomMetragem,                    classe_tensao: randomClasse,                    status: randomStatus,                    saude_ia: randomSaude,                    historico_uso: historicoUso,                    historico_manutencao: historicoManutencao                });            }                                    return cables;        }        // Navegação        function setupNavigation() {            const navItems = document.querySelectorAll('.nav-item');            const sections = document.querySelectorAll('.section');            navItems.forEach(item => {                item.addEventListener('click', () => {                    const targetSection = item.dataset.section;                                                            // Remove active class from all nav items                    navItems.forEach(nav => nav.classList.remove('active'));                    item.classList.add('active');                                                            // Hide all sections                    sections.forEach(section => section.classList.add('hidden'));                                                            // Show target section                    document.getElementById(`${targetSection}-section`).classList.remove('hidden');                });            });        }        // Busca        function performSearch() {            const searchTerm = document.getElementById('search-input').value.toLowerCase();            currentSearch = searchTerm;                                    if (searchTerm.trim() === '') {                filteredCables = [...allCables];            } else {                filteredCables = allCables.filter(cable => {                    return cable.id_patrimonio.toLowerCase().includes(searchTerm) ||                           cable.filial.toLowerCase().includes(searchTerm) ||                           cable.bitola.toLowerCase().includes(searchTerm) ||                           cable.classe_tensao.toLowerCase().includes(searchTerm) ||                           cable.status.toLowerCase().includes(searchTerm);                });            }                                    currentPage = 1;            applyCurrentFilters(); // Re-apply filters on top of search results            updateTable();            updateKPIs();            updateCharts();            updateAlerts();        }        function clearSearch() {            document.getElementById('search-input').value = '';            currentSearch = '';            // Reset filteredCables to allCables before applying filters            filteredCables = [...allCables];             currentPage = 1;            applyCurrentFilters(); // Re-apply filters to the full dataset            updateTable();            updateKPIs();            updateCharts();            updateAlerts();        }        // Filtros        function setupFilters() {            const filterElements = [                'filter-filial',                'filter-bitola',                 'filter-metragem',                'filter-classe',                'filter-status'            ];            filterElements.forEach(filterId => {                document.getElementById(filterId).addEventListener('change', () => {                    currentPage = 1;                    applyFilters();                });            });        }        function applyCurrentFilters() {            const filters = {                filial: document.getElementById('filter-filial').value,                bitola: document.getElementById('filter-bitola').value,                metragem: document.getElementById('filter-metragem').value,                classe_tensao: document.getElementById('filter-classe').value,                status: document.getElementById('filter-status').value            };            // Start filtering from allCables if no search, or from search results if search is active            let cablesToFilter = currentSearch ?                 allCables.filter(cable => {                    return cable.id_patrimonio.toLowerCase().includes(currentSearch) ||                           cable.filial.toLowerCase().includes(currentSearch) ||                           cable.bitola.toLowerCase().includes(currentSearch) ||                           cable.classe_tensao.toLowerCase().includes(currentSearch) ||                           cable.status.toLowerCase().includes(currentSearch);                }) : [...allCables];            filteredCables = cablesToFilter.filter(cable => {                return Object.keys(filters).every(key => {                    if (!filters[key]) return true; // If filter is empty, don't filter by this key                                                            if (key === 'metragem') {                        return cable.metros === parseFloat(filters[key]);                    }                                                            return cable[key] === filters[key];                });            });        }        function applyFilters() {            applyCurrentFilters();            updateTable();            updateKPIs();            updateCharts();            updateAlerts();        }        function clearAllFilters() {            document.getElementById('filter-filial').value = '';            document.getElementById('filter-bitola').value = '';            document.getElementById('filter-metragem').value = '';            document.getElementById('filter-classe').value = '';            document.getElementById('filter-status').value = '';                                    // Reset filteredCables based on current search, or to allCables if no search            filteredCables = currentSearch ?                 allCables.filter(cable => {                    return cable.id_patrimonio.toLowerCase().includes(currentSearch) ||                           cable.filial.toLowerCase().includes(currentSearch) ||                           cable.bitola.toLowerCase().includes(currentSearch) ||                           cable.classe_tensao.toLowerCase().includes(currentSearch) ||                           cable.status.toLowerCase().includes(currentSearch);                }) : [...allCables];                                    currentPage = 1;            updateTable();            updateKPIs();            updateCharts();            updateAlerts();        }        // Paginação        function changePage(direction) {            const totalPages = Math.ceil(filteredCables.length / itemsPerPage);            const newPage = currentPage + direction;                                    if (newPage >= 1 && newPage <= totalPages) {                currentPage = newPage;                updateTable();            }        }        // Atualizar tabela        function updateTable() {            const tbody = document.getElementById('stock-table-body');            const totalPages = Math.ceil(filteredCables.length / itemsPerPage);            const startIndex = (currentPage - 1) * itemsPerPage;            const endIndex = startIndex + itemsPerPage;            const currentData = filteredCables.slice(startIndex, endIndex);                                    tbody.innerHTML = '';            currentData.forEach(cable => {                const row = document.createElement('tr');                row.innerHTML = `                    <td>${cable.id_patrimonio}</td>                    <td>${cable.filial}</td>                    <td>${cable.bitola}</td>                    <td>${cable.metros}m</td>                    <td>${cable.classe_tensao}</td>                    <td><span class="status-badge status-${cable.status.toLowerCase().replace('ã', 'a').replace('í', 'i')}">${cable.status}</span></td>                    <td><span class="health-badge ${cable.saude_ia}" title="${cable.saude_ia}"></span></td>                `;                                row.addEventListener('click', () => openCableModal(cable));                tbody.appendChild(row);            });            // Atualizar informações da paginação            document.getElementById('table-info').textContent =                 `Mostrando ${startIndex + 1}-${Math.min(endIndex, filteredCables.length)} de ${filteredCables.length} registros`;                                    document.getElementById('page-info').textContent =                 `Página ${currentPage} de ${totalPages || 1}`;                                    document.getElementById('prev-btn').disabled = currentPage === 1;            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;        }        // Atualizar KPIs        function updateKPIs() {            const total = filteredCables.length;            const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;            const locados = filteredCables.filter(c => c.status === 'Locados').length;            const extraviados = filteredCables.filter(c => c.status === 'Extraviados').length;            const manutencao = filteredCables.filter(c => c.status === 'Manutenção').length;                                    const saudeVerde = filteredCables.filter(c => c.saude_ia === 'Verde').length;            const saudeAmarela = filteredCables.filter(c => c.saude_ia === 'Amarelo').length;            const saudeVermelha = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;                                    const totalMetros = filteredCables.reduce((sum, cable) => sum + cable.metros, 0);            // Determinar cor da saúde da frota            let saudeColor = 'verde';            if (saudeVermelha > saudeVerde * 0.2) saudeColor = 'vermelho';            else if (saudeAmarela > saudeVerde * 0.3) saudeColor = 'amarelo';            const kpisContainer = document.getElementById('kpis-container');            kpisContainer.innerHTML = `                <div class="kpi-card">                    <div class="kpi-title">Saúde da Frota</div>                    <div class="health-indicator health-${saudeColor}">                        ${saudeColor === 'verde' ? '✓' : saudeColor === 'amarelo' ? '⚠' : '✗'}                    </div>                    <div class="kpi-description">                        Verde: ${saudeVerde} | Amarelo: ${saudeAmarela} | Vermelho: ${saudeVermelha}                    </div>                </div>                                                <div class="kpi-card">                    <div class="kpi-title">Estoque Total</div>                    <div class="kpi-value" style="color: #F38028;">${total}</div>                    <div class="kpi-description">Cabos no sistema</div>                </div>                                                <div class="kpi-card">                    <div class="kpi-title">Disponíveis</div>                    <div class="kpi-value" style="color: #28a745;">${disponivel}</div>                    <div class="kpi-description">${total > 0 ? ((disponivel/total)*100).toFixed(1) : 0}% do total</div>                </div>                                                <div class="kpi-card">                    <div class="kpi-title">Em Uso</div>                    <div class="kpi-value" style="color: #17a2b8;">${locados}</div>                    <div class="kpi-description">${total > 0 ? ((locados/total)*100).toFixed(1) : 0}% do total</div>                </div>                                                <div class="kpi-card">                    <div class="kpi-title">Extravios</div>                    <div class="alert-icon">⚠️</div>                    <div class="kpi-value" style="color: #dc3545;">${extraviados}</div>                    <div class="kpi-description">${total > 0 ? ((extraviados/total)*100).toFixed(1) : 0}% do total</div>                </div>                                                <div class="kpi-card">                    <div class="kpi-title">Total de Metros</div>                    <div class="kpi-value" style="color: #F38028;">${totalMetros.toLocaleString('pt-BR')}</div>                    <div class="kpi-description">Metros de cabo</div>                </div>            `;        }        // Gráficos        function updateCharts() {            updateStatusChart();            updateHealthChart();        }        function updateStatusChart() {            const ctx = document.getElementById('statusChart').getContext('2d');                                    const statusData = {                'Disponível': filteredCables.filter(c => c.status === 'Disponível').length,                'Locados': filteredCables.filter(c => c.status === 'Locados').length,                'Extraviados': filteredCables.filter(c => c.status === 'Extraviados').length,                'Manutenção': filteredCables.filter(c => c.status === 'Manutenção').length            };            if (window.statusChart) {                window.statusChart.destroy();            }            window.statusChart = new Chart(ctx, {                type: 'doughnut',                data: {                    labels: Object.keys(statusData),                    datasets: [{                        data: Object.values(statusData),                        backgroundColor: [                            '#28a745',                            '#17a2b8',                             '#dc3545',                            '#ffc107'                        ]                    }]                },                options: {                    responsive: true,                    maintainAspectRatio: false,                    plugins: {                        legend: {                            position: 'bottom'                        }                    }                }            });        }        function updateHealthChart() {            const ctx = document.getElementById('healthChart').getContext('2d');                                    const healthData = {                'Verde': filteredCables.filter(c => c.saude_ia === 'Verde').length,                'Amarelo': filteredCables.filter(c => c.saude_ia === 'Amarelo').length,                'Vermelho': filteredCables.filter(c => c.saude_ia === 'Vermelho').length            };            if (window.healthChart) {                window.healthChart.destroy();            }            window.healthChart = new Chart(ctx, {                type: 'bar',                data: {                    labels: Object.keys(healthData),                    datasets: [{                        label: 'Cabos',                        data: Object.values(healthData),                        backgroundColor: [                            '#28a745',                            '#ffc107',                            '#dc3545'                        ]                    }]                },                options: {                    responsive: true,                    maintainAspectRatio: false,                    scales: {                        y: {                            beginAtZero: true                        }                    },                    plugins: {                        legend: {                            display: false                        }                    }                }            });        }        // Alertas        function updateAlerts() {            const alerts = checkAlerts();            const container = document.getElementById('alerts-container');                                    if (alerts.length === 0) {                container.innerHTML = '';                document.getElementById('notification-count').textContent = '0';                return;            }            container.innerHTML = alerts.map(alert => `                <div class="alert alert-${alert.type}">                    <div class="alert-message">                        <strong>${alert.title}</strong><br>                        ${alert.message}                    </div>                    <button class="alert-action" onclick="${alert.action}">                        ${alert.buttonText}                    </button>                </div>            `).join('');            // Atualizar contador de notificações            document.getElementById('notification-count').textContent = alerts.length;        }        function checkAlerts() {            const alerts = [];                                    // Verificar cabos com saúde crítica            const criticalCables = filteredCables.filter(c => c.saude_ia === 'Vermelho');            if (criticalCables.length > 0) {                alerts.push({                    type: 'critical',                    title: 'Atenção Crítica',                    message: `${criticalCables.length} cabos precisam de atenção imediata`,                    buttonText: 'Ver Detalhes',                    action: `showCriticalCables()`                });            }                                    // Verificar extravios            const lostCables = filteredCables.filter(c => c.status === 'Extraviados');            if (lostCables.length > 5) { // Threshold for warning                alerts.push({                    type: 'warning',                    title: 'Extravios Detectados',                    message: `${lostCables.length} cabos extraviados detectados`,                    buttonText: 'Investigar',                    action: `showLostCables()`                });            }            // Verificar baixo estoque disponível (alta utilização)            const totalCables = filteredCables.length;            const availableCables = filteredCables.filter(c => c.status === 'Disponível').length;            // Avoid division by zero            const utilizationRate = totalCables > 0 ? (totalCables - availableCables) / totalCables : 0;             if (utilizationRate > 0.8 && totalCables > 0) { // If more than 80% are in use/lost/maintenance                alerts.push({                    type: 'info',                    title: 'Alta Utilização',                    message: `Taxa de utilização em ${(utilizationRate * 100).toFixed(1)}% - considere expandir frota`,                    buttonText: 'Analisar',                    action: `analyzeUtilization()`                });            }                                    return alerts;        }        function showCriticalCables() {            // Simulate applying filter for critical cables            document.getElementById('filter-status').value = ''; // Clear status filter first            // In a real app, you'd set a filter for saude_ia = 'Vermelho'            alert('Mostrando cabos com saúde crítica. Funcionalidade completa em desenvolvimento.');            // For demonstration, let's just filter by status 'Manutenção' as a proxy            document.getElementById('filter-status').value = 'Manutenção';            applyFilters();        }        function showLostCables() {            document.getElementById('filter-status').value = 'Extraviados';            applyFilters();            alert('Filtro aplicado para mostrar cabos extraviados.');        }        function analyzeUtilization() {            alert('Abrindo análise de utilização. Funcionalidade completa em desenvolvimento.');        }        // Exportação        function exportToCSV() {            const headers = ['ID Patrimônio', 'Filial', 'Bitola', 'Metros', 'Classe de Tensão', 'Status', 'Saúde IA'];            const csvContent = [                headers.join(','),                ...filteredCables.map(cable => [                    cable.id_patrimonio,                    cable.filial,                    cable.bitola,                    cable.metros,                    cable.classe_tensao,                    cable.status,                    cable.saude_ia                ].map(item => `"${String(item).replace(/"/g, '""')}"`).join(',')) // Handle commas and quotes in data            ].join('\n');                                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });            const url = window.URL.createObjectURL(blob);            const a = document.createElement('a');            a.href = url;            a.download = `relatorio_cabos_${new Date().toISOString().split('T')[0]}.csv`;            document.body.appendChild(a);            a.click();            document.body.removeChild(a);            window.URL.revokeObjectURL(url);            alert('Dados exportados para CSV com sucesso!');        }        // Relatórios        function generateReport(type) {            const reportTypes = {                'monthly': 'Relatório Mensal',                'maintenance': 'Relatório de Manutenção',                'utilization': 'Taxa de Utilização',                'losses': 'Perdas e Extravios',                'health': 'Saúde da Frota',                'financial': 'Análise Financeira'            };            alert(`Gerando ${reportTypes[type]}...\n\nEsta funcionalidade estará disponível em breve com análises detalhadas e exportação em PDF.`);        }        // Modal do cabo        function openCableModal(cable) {            const modal = document.getElementById('cable-modal');            const title = document.getElementById('modal-title');            const body = document.getElementById('modal-body');                        title.textContent = `Detalhes do Cabo: ${cable.id_patrimonio}`;                        body.innerHTML = `                <div class="modal-section">                    <h4>Especificações</h4>                    <div class="detail-grid">                        <div class="detail-item">                            <div class="detail-label">ID Patrimônio</div>                            <div class="detail-value">${cable.id_patrimonio}</div>                        </div>                        <div class="detail-item">                            <div class="detail-label">Filial</div>                            <div class="detail-value">${cable.filial}</div>                        </div>                        <div class="detail-item">                            <div class="detail-label">Bitola</div>                            <div class="detail-value">${cable.bitola}</div>                        </div>                        <div class="detail-item">                            <div class="detail-label">Metragem</div>                            <div class="detail-value">${cable.metros}m</div>                        </div>                        <div class="detail-item">                            <div class="detail-label">Classe de Tensão</div>                            <div class="detail-value">${cable.classe_tensao}</div>                        </div>                        <div class="detail-item">                            <div class="detail-label">Status</div>                            <div class="detail-value">                                <span class="status-badge status-${cable.status.toLowerCase().replace('ã', 'a').replace('í', 'i')}">${cable.status}</span>                            </div>                        </div>                    </div>                                        <div class="detail-item">                        <div class="detail-label">Farol de Saúde da IA</div>                        <div class="detail-value">                            <span class="health-badge ${cable.saude_ia}"></span> ${cable.saude_ia}                        </div>                    </div>                </div>                                <div class="modal-section">                    <h4>Histórico de Uso</h4>                    <ul class="history-list">                        ${cable.historico_uso.length > 0 ? cable.historico_uso.map(uso => `                            <li class="history-item">                                <strong>Data:</strong> ${new Date(uso.data).toLocaleDateString('pt-BR')}<br>                                <strong>Projeto:</strong> ${uso.projeto}<br>                                <strong>Duração:</strong> ${uso.duracao}                            </li>                        `).join('') : '<li class="history-item">Nenhum histórico de uso registrado.</li>'}                    </ul>                </div>                                <div class="modal-section">                    <h4>Histórico de Manutenção</h4>                    <ul class="history-list">                        ${cable.historico_manutencao.length > 0 ? cable.historico_manutencao.map(manutencao => `                            <li class="history-item">                                <strong>Data:</strong> ${new Date(manutencao.data).toLocaleDateString('pt-BR')}<br>                                <strong>Tipo:</strong> ${manutencao.tipo}<br>                                <strong>Custo:</strong> ${manutencao.custo}                            </li>                        `).join('') : '<li class="history-item">Nenhum histórico de manutenção registrado.</li>'}                    </ul>                </div>                                <div class="edit-section">                    <h4>Ajustar Ficha do Projeto</h4>                    <textarea class="edit-input" placeholder="Digite observações sobre o cabo..."></textarea>                    <button class="save-button" onclick="saveNotes()">Salvar Observações</button>                </div>            `;                        modal.classList.remove('hidden');        }        function closeCableModal() {            document.getElementById('cable-modal').classList.add('hidden');        }        function saveNotes() {            alert('Observações salvas com sucesso!');        }        // Chat Modal        function openChatModal() {            document.getElementById('chat-modal').classList.remove('hidden');        }        function closeChatModal() {            document.getElementById('chat-modal').classList.add('hidden');        }        function getAIResponse(userMessage) {            const message = userMessage.toLowerCase();                                    if (message.includes('estoque') || message.includes('total') || message.includes('disponibilidade')) {                const total = filteredCables.length;                const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;                return `Atualmente temos ${total} cabos no sistema, sendo ${disponivel} disponíveis para uso. A taxa de disponibilidade é de ${total > 0 ? ((disponivel/total)*100).toFixed(1) : 0}%.`;            }                                    if (message.includes('extraviado') || message.includes('perdido') || message.includes('perdas')) {                const lost = filteredCables.filter(c => c.status === 'Extraviados').length;                const percentage = filteredCables.length > 0 ? ((lost/filteredCables.length)*100).toFixed(1) : 0;                return `Temos ${lost} cabos extraviados (${percentage}% do total). Recomendo uma auditoria nas filiais com maior incidência e implementação de controles de rastreamento mais rigorosos.`;            }                                    if (message.includes('manutenção') || message.includes('manutencao') || message.includes('critico')) {                const maintenance = filteredCables.filter(c => c.status === 'Manutenção').length;                const critical = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;                return `${maintenance} cabos estão em manutenção e ${critical} cabos têm saúde crítica. Recomendo priorizar os cabos críticos para evitar falhas em campo.`;            }                                    if (message.includes('saúde') || message.includes('saude') || message.includes('farol')) {                const verde = filteredCables.filter(c => c.saude_ia === 'Verde').length;                const amarelo = filteredCables.filter(c => c.saude_ia === 'Amarelo').length;                const vermelho = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;                return `Status de saúde da frota: ${verde} cabos em bom estado (Verde), ${amarelo} com atenção necessária (Amarelo), e ${vermelho} críticos (Vermelho). Foco nos cabos críticos é prioritário.`;            }                                    if (message.includes('utilização') || message.includes('utilizacao') || message.includes('uso')) {                const locados = filteredCables.filter(c => c.status === 'Locados').length;                const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;                const totalForUtilization = locados + disponivel;                const utilizacao = totalForUtilization > 0 ? ((locados/totalForUtilization)*100).toFixed(1) : 0;                return `Taxa de utilização atual: ${utilizacao}%. ${locados} cabos em uso e ${disponivel} disponíveis. ${utilizacao > 80 ? 'Considere expandir a frota.' : 'Capacidade adequada.'}`;            }                                    if (message.includes('custo') || message.includes('financeiro') || message.includes('roi')) {                return `Posso ajudar com análises financeiras detalhadas. As principais métricas incluem: custos de manutenção, ROI por projeto, e otimização de investimentos. Gostaria de focar em algum aspecto específico?`;            }                                    if (message.includes('relatório') || message.includes('relatorio')) {                return `Posso gerar diversos relatórios: mensal, manutenção, utilização, perdas, saúde da frota e análise financeira. Qual relatório você gostaria de gerar?`;            }                                    return `Como especialista em gestão de cabos, posso ajudá-lo com informações sobre:            \n• Estoque e disponibilidade            \n• Análise de saúde da frota            \n• Manutenção preventiva            \n• Controle de extravios            \n• Otimização de custos            \n• Relatórios personalizados            \n\nSobre o que você gostaria de saber?`;        }        function sendMessage() {            const input = document.getElementById('chat-input');            const messagesContainer = document.getElementById('chat-messages');                                    if (input.value.trim()) {                // Adicionar mensagem do usuário                const userMessage = document.createElement('div');                userMessage.className = 'chat-message user';                userMessage.textContent = input.value;                messagesContainer.appendChild(userMessage);                                                const userText = input.value;                input.value = '';                                                // Simular resposta da IA                setTimeout(() => {                    const aiMessage = document.createElement('div');                    aiMessage.className = 'chat-message ai';                    aiMessage.textContent = getAIResponse(userText);                    messagesContainer.appendChild(aiMessage);                    messagesContainer.scrollTop = messagesContainer.scrollHeight;                }, 1000);                                                messagesContainer.scrollTop = messagesContainer.scrollHeight;            }        }        // Notificações        function toggleNotifications() {            alert('Central de notificações em desenvolvimento. Você receberá alertas sobre:\n\n• Cabos com manutenção vencida\n• Extravios detectados\n• Saúde crítica da frota\n• Projetos com atraso na devolução');        }        // Enter para enviar mensagem        document.addEventListener('DOMContentLoaded', () => {            document.getElementById('chat-input').addEventListener('keypress', (e) => {                if (e.key === 'Enter') {                    sendMessage();                }            });            document.getElementById('search-input').addEventListener('keypress', (e) => {                if (e.key === 'Enter') {                    performSearch();                }            });        });        // Fechar modais clicando fora        document.addEventListener('click', (e) => {            if (e.target.classList.contains('modal-overlay')) {                closeCableModal();                closeChatModal();            }        });        // Inicialização        document.addEventListener('DOMContentLoaded', () => {            allCables = generateCablesData();            filteredCables = [...allCables];                                    setupNavigation();            setupFilters();            updateTable();            updateKPIs();            updateCharts();            updateAlerts();        });    </script></body></html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoVision - Gestão de Cabos Inteligente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos CSS (mantidos do código anterior) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F5F5F5;
+            color: #333;
+        }
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Header */
+        .header {
+            background-color: #FFFFFF;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 3px solid #F38028;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo {
+            color: #F38028;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin: 0;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .notification-bell {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #F38028;
+        }
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Layout */
+        .app-body {
+            display: flex;
+            flex: 1;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #FFFFFF;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            padding: 1.5rem 0;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: #333;
+        }
+        .nav-item:hover {
+            background-color: #F5F5F5;
+        }
+        .nav-item.active {
+            background-color: #F38028;
+            color: white;
+            border-right: 4px solid #d66d1a;
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        /* Search Bar */
+        .search-container {
+            background-color: #FFFFFF;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #F38028;
+        }
+        .search-button {
+            background-color: #F38028;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .clear-search {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        /* Dashboard */
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .dashboard-header h2 {
+            color: #333;
+            margin: 0;
+            flex: 1;
+        }
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .chat-button, .export-button {
+            background-color: #F38028;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .export-button {
+            background-color: #28a745;
+        }
+        .chat-button:hover {
+            background-color: #d66d1a;
+        }
+        .export-button:hover {
+            background-color: #218838;
+        }
+        /* Alerts */
+        .alerts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .alert-critical {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .alert-message {
+            flex: 1;
+        }
+        .alert-action {
+            background-color: transparent;
+            border: 2px solid currentColor;
+            color: inherit;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        /* Filters */
+        .filters {
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .filters h3 {
+            color: #F38028;
+            margin-bottom: 1rem;
+        }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .filter-group select:focus {
+            outline: none;
+            border-color: #F38028;
+        }
+        .clear-filters {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .clear-filters:hover {
+            background-color: #555;
+        }
+        /* KPIs */
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .kpi-card {
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .kpi-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .kpi-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .health-indicator {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+        }
+        .health-verde { background-color: #28a745; }
+        .health-amarelo { background-color: #ffc107; }
+        .health-vermelho { background-color: #dc3545; }
+        .alert-icon {
+            color: #F38028;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        /* Charts */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-container {
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chart-container h3 {
+            color: #F38028;
+            margin-bottom: 1rem;
+        }
+        /* Stock Table */
+        .stock-table-container {
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stock-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .stock-table-header h3 {
+            color: #F38028;
+            margin: 0;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .stock-table th,
+        .stock-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .stock-table th {
+            background-color: #F5F5F5;
+            font-weight: 600;
+            color: #333;
+        }
+        .stock-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .stock-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .status-disponivel { background-color: #d4edda; color: #155724; }
+        .status-locados { background-color: #d1ecf1; color: #0c5460; }
+        .status-extraviados { background-color: #f8d7da; color: #721c24; }
+        .status-manutencao { background-color: #fff3cd; color: #856404; }
+        .health-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .health-badge.Verde { background-color: #28a745; }
+        .health-badge.Amarelo { background-color: #ffc107; }
+        .health-badge.Vermelho { background-color: #dc3545; }
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .pagination button {
+            background-color: #F38028;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .pagination-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        /* Reports Section */
+        .reports-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .report-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .report-card {
+            background-color: #FFFFFF;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            border-top: 4px solid #F38028;
+        }
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .report-card h3 {
+            color: #F38028;
+            margin-bottom: 1rem;
+        }
+        .report-card p {
+            color: #666;
+        }
+        .report-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            color: #F38028;
+            margin: 0;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-section {
+            margin-bottom: 2rem;
+        }
+        .modal-section h4 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #F38028;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .detail-item {
+            background-color: #F5F5F5;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .detail-value {
+            color: #333;
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+        .history-item {
+            background-color: #F5F5F5;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid #F38028;
+        }
+        .edit-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .edit-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        .edit-input:focus {
+            outline: none;
+            border-color: #F38028;
+        }
+        .save-button {
+            background-color: #F38028;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .save-button:hover {
+            background-color: #d66d1a;
+        }
+        /* Chat Modal */
+        .chat-modal {
+            max-width: 500px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .chat-message.ai {
+            background-color: #F38028;
+            color: white;
+            margin-right: auto;
+        }
+        .chat-message.user {
+            background-color: #FFFFFF;
+            color: #333;
+            margin-left: auto;
+            border: 1px solid #ddd;
+        }
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .chat-send {
+            background-color: #F38028;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .section-placeholder {
+            background-color: #FFFFFF;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .section-placeholder h2 {
+            color: #F38028;
+            margin-bottom: 1rem;
+        }
+        .section-placeholder p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .nav-item {
+                min-width: 120px;
+            }
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            .kpis {
+                grid-template-columns: 1fr;
+            }
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .dashboard-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="logo">TecnoVision</h1>
+                    <p class="subtitle">Gestão de Cabos Inteligente</p>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-bell" onclick="toggleNotifications()">
+                        🔔
+                        <span class="notification-count" id="notification-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <div class="app-body">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-section="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-section="inventario">
+                        <span class="nav-icon">📦</span>
+                        <span class="nav-label">Inventário</span>
+                    </button>
+                    <button class="nav-item" data-section="relatorios">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Relatórios</span>
+                    </button>
+                    <button class="nav-item" data-section="projetos">
+                        <span class="nav-icon">🏗️</span>
+                        <span class="nav-label">Projetos</span>
+                    </button>
+                    <button class="nav-item" data-section="ia-chat">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label">IA Chat</span>
+                    </button>
+                </nav>
+            </aside>
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="search-input" placeholder="Buscar por ID, filial, bitola, classe de tensão...">
+                        <button class="search-button" onclick="performSearch()">🔍 Buscar</button>
+                        <button class="clear-search" onclick="clearSearch()">Limpar</button>
+                    </div>
+                    <div class="dashboard">
+                        <div class="dashboard-header">
+                            <h2>Dashboard de Gestão de Cabos</h2>
+                            <div class="dashboard-actions">
+                                <button class="export-button" onclick="exportToCSV()">
+                                    📊 Exportar CSV
+                                </button>
+                                <button class="chat-button" onclick="openChatModal()">
+                                    🤖 Conversar com o Agente IA
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Alerts -->
+                        <div class="alerts-container" id="alerts-container">
+                            <!-- Alertas serão gerados dinamicamente -->
+                        </div>
+                        <!-- Filters -->
+                        <div class="filters">
+                            <h3>Filtros Avançados</h3>
+                            <div class="filters-grid">
+                                <div class="filter-group">
+                                    <label>FILIAL</label>
+                                    <select id="filter-filial">
+                                        <option value="">Todos</option>
+                                        <option value="SP-SBC">SP-SBC</option>
+                                        <option value="RJ-DCS">RJ-DCS</option>
+                                        <option value="MG-CGE">MG-CGE</option>
+                                        <option value="BA-SSF">BA-SSF</option>
+                                        <option value="CE-MRU">CE-MRU</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>BITOLA</label>
+                                    <select id="filter-bitola">
+                                        <option value="">Todos</option>
+                                        <option value="35mm²">35mm²</option>
+                                        <option value="50mm²">50mm²</option>
+                                        <option value="70mm²">70mm²</option>
+                                        <option value="95mm²">95mm²</option>
+                                        <option value="120mm²">120mm²</option>
+                                        <option value="240mm²">240mm²</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>METRAGEM</label>
+                                    <select id="filter-metragem">
+                                        <option value="">Todos</option>
+                                        <option value="6">6m</option>
+                                        <option value="12.5">12,5m</option>
+                                        <option value="25">25m</option>
+                                        <option value="50">50m</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>CLASSE DE TENSÃO</label>
+                                    <select id="filter-classe">
+                                        <option value="">Todos</option>
+                                        <option value="1kV">1kV</option>
+                                        <option value="8,7/15kV">8,7/15kV</option>
+                                        <option value="12/20kV">12/20kV</option>
+                                        <option value="20/35kV">20/35kV</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>STATUS</label>
+                                    <select id="filter-status">
+                                        <option value="">Todos</option>
+                                        <option value="Locados">Locados</option>
+                                        <option value="Disponível">Disponível</option>
+                                        <option value="Extraviados">Extraviados</option>
+                                        <option value="Manutenção">Manutenção</option>
+                                    </select>
+                                </div>
+                                <button class="clear-filters" onclick="clearAllFilters()">
+                                    Limpar Filtros
+                                </button>
+                            </div>
+                        </div>
+                        <!-- KPIs -->
+                        <div class="kpis" id="kpis-container">
+                            <!-- KPIs serão gerados dinamicamente -->
+                        </div>
+                        <!-- Charts -->
+                        <div class="charts-section">
+                            <div class="chart-container">
+                                <h3>Distribuição por Status</h3>
+                                <canvas id="statusChart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h3>Saúde da Frota</h3>
+                                <canvas id="healthChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <!-- Stock Table -->
+                        <div class="stock-table-container">
+                            <div class="stock-table-header">
+                                <h3>Tabela de Resumo de Estoque</h3>
+                                <div class="pagination-info" id="table-info">
+                                    Mostrando 0 de 0 registros
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="stock-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Patrimônio</th>
+                                            <th>Filial</th>
+                                            <th>Bitola</th>
+                                            <th>Metros</th>
+                                            <th>Classe de Tensão</th>
+                                            <th>Status</th>
+                                            <th>Saúde IA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stock-table-body">
+                                        <!-- Dados serão preenchidos dinamicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="pagination">
+                                <button onclick="changePage(-1)" id="prev-btn">◀ Anterior</button>
+                                <span class="pagination-info" id="page-info">Página 1 de 1</span>
+                                <button onclick="changePage(1)" id="next-btn">Próximo ▶</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reports Section -->
+                <div id="relatorios-section" class="section hidden">
+                    <div class="reports-dashboard">
+                        <div class="dashboard-header">
+                            <h2>Relatórios e Analytics</h2>
+                        </div>
+                                                <div class="report-cards">
+                            <div class="report-card" onclick="generateReport('monthly')">
+                                <div class="report-icon">📅</div>
+                                <h3>Relatório Mensal</h3>
+                                <p>Análise completa do desempenho mensal da frota de cabos</p>
+                            </div>
+                                                        <div class="report-card" onclick="generateReport('maintenance')">
+                                <div class="report-icon">🔧</div>
+                                <h3>Relatório de Manutenção</h3>
+                                <p>Custos, frequência e tipos de manutenção realizadas</p>
+                            </div>
+                                                        <div class="report-card" onclick="generateReport('utilization')">
+                                <div class="report-icon">📊</div>
+                                <h3>Taxa de Utilização</h3>
+                                <p>Análise da utilização dos cabos por filial e projeto</p>
+                            </div>
+                                                        <div class="report-card" onclick="generateReport('losses')">
+                                <div class="report-icon">⚠️</div>
+                                <h3>Perdas e Extravios</h3>
+                                <p>Relatório detalhado de cabos extraviados e custos</p>
+                            </div>
+                                                        <div class="report-card" onclick="generateReport('health')">
+                                <div class="report-icon">💚</div>
+                                <h3>Saúde da Frota</h3>
+                                <p>Análise predictiva baseada na IA da saúde dos cabos</p>
+                            </div>
+                                                        <div class="report-card" onclick="generateReport('financial')">
+                                <div class="report-icon">💰</div>
+                                <h3>Análise Financeira</h3>
+                                <p>ROI, custos operacionais e otimização de investimentos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Other Sections -->
+                <div id="inventario-section" class="section hidden">
+                    <div class="section-placeholder">
+                        <h2>Inventário Detalhado</h2>
+                        <p>Gestão completa do inventário de cabos em desenvolvimento...</p>
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/1adaa3f6-2c14-464f-b1c4-a9e05e99612c.png" alt="Dashboard de inventário com gráficos detalhados mostrando localização de cabos em estoque, filtros avançados e status de cada item em tempo real" />
+                    </div>
+                </div>
+                <div id="projetos-section" class="section hidden">
+                    <div class="section-placeholder">
+                        <h2>Gestão de Projetos</h2>
+                        <p>Alocação e controle de cabos por projeto em desenvolvimento...</p>
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e949813c-9644-4729-9234-2919b8828f43.png" alt="Interface de gestão de projetos mostrando timeline de alocação de cabos, status de projetos ativos e cronograma de retorno de equipamentos" />
+                    </div>
+                </div>
+                <div id="ia-chat-section" class="section hidden">
+                    <div class="section-placeholder">
+                        <h2>IA Chat Avançado</h2>
+                        <p>Assistente inteligente para gestão de cabos em desenvolvimento...</p>
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/027323d7-e0ec-4a52-a925-dd8f67eac7eb.png" alt="Interface de chat com IA mostrando conversas sobre gestão de cabos, análises preditivas e sugestões de otimização em tempo real" />
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Cable Modal -->
+    <div id="cable-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Detalhes do Cabo</h3>
+                <button class="close-button" onclick="closeCableModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="modal-overlay hidden">
+        <div class="modal chat-modal">
+            <div class="modal-header">
+                <h3>Agente IA - TecnoVision</h3>
+                <button class="close-button" onclick="closeChatModal()">&times;</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-message ai">
+                    Olá! Sou o Agente IA da TecnoVision. Como posso ajudá-lo com a gestão de cabos hoje? Posso fornecer informações sobre estoque, manutenção, extravios e análises preditivas.
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Digite sua mensagem...">
+                <button class="chat-send" onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Dados simulados e variáveis globais
+        let allCables = [];
+        let filteredCables = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        let currentSearch = '';
+
+        // Gerar dados simulados
+        function generateCablesData() {
+            const filiais = ['SP-SBC', 'RJ-DCS', 'MG-CGE', 'BA-SSF', 'CE-MRU'];
+            const bitolas = ['35mm²', '50mm²', '70mm²', '95mm²', '120mm²', '240mm²'];
+            const metragens = [6, 12.5, 25, 50];
+            const classes = ['1kV', '8,7/15kV', '12/20kV', '20/35kV'];
+            const statuses = ['Locados', 'Disponível', 'Extraviados', 'Manutenção'];
+            const saudes = ['Verde', 'Amarelo', 'Vermelho'];
+            const projetos = ['Projeto Alpha', 'Projeto Beta', 'Projeto Gamma', 'Projeto Delta', 'Projeto Omega'];
+            const tipos = ['Preventiva', 'Corretiva', 'Preditiva'];
+
+            const weightedRandom = (items, weights) => {
+                const random = Math.random();
+                let weightSum = 0;
+                                
+                for (let i = 0; i < items.length; i++) {
+                    weightSum += weights[i];
+                    if (random <= weightSum) {
+                        return items[i];
+                    }
+                }
+                return items[items.length - 1];
+            };
+
+            const cables = [];
+                        
+            for (let i = 1; i <= 500; i++) {
+                const randomFilial = filiais[Math.floor(Math.random() * filiais.length)];
+                const randomBitola = bitolas[Math.floor(Math.random() * bitolas.length)];
+                const randomMetragem = metragens[Math.floor(Math.random() * metragens.length)];
+                const randomClasse = classes[Math.floor(Math.random() * classes.length)];
+                                
+                // Maior probabilidade para "Disponível"
+                const statusWeights = [0.15, 0.65, 0.1, 0.1];
+                const randomStatus = weightedRandom(statuses, statusWeights);
+                                
+                const randomSaude = saudes[Math.floor(Math.random() * saudes.length)];
+
+                // Gerar histórico de uso
+                const historicoUso = [];
+                const numUso = Math.floor(Math.random() * 3) + 1;
+                for (let j = 0; j < numUso; j++) {
+                    historicoUso.push({
+                        data: new Date(2023 + Math.random(), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+                        projeto: projetos[Math.floor(Math.random() * projetos.length)],
+                        duracao: `${Math.floor(Math.random() * 60) + 15} dias`
+                    });
+                }
+
+                // Gerar histórico de manutenção
+                const historicoManutencao = [];
+                const numManutencao = Math.floor(Math.random() * 2) + 1;
+                for (let j = 0; j < numManutencao; j++) {
+                    historicoManutencao.push({
+                        data: new Date(2023 + Math.random(), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+                        tipo: tipos[Math.floor(Math.random() * tipos.length)],
+                        custo: `R$ ${(Math.random() * 500 + 100).toFixed(2).replace('.', ',')}`
+                    });
+                }
+
+                cables.push({
+                    id_patrimonio: `CMT-${randomBitola.replace('mm²', '')}-${String(i).padStart(3, '0')}`,
+                    filial: randomFilial,
+                    bitola: randomBitola,
+                    metros: randomMetragem,
+                    classe_tensao: randomClasse,
+                    status: randomStatus,
+                    saude_ia: randomSaude,
+                    historico_uso: historicoUso,
+                    historico_manutencao: historicoManutencao
+                });
+            }
+                        
+            return cables;
+        }
+
+        // Navegação
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetSection = item.dataset.section;
+                                        
+                    // Remove active class from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                                        
+                    // Hide all sections
+                    sections.forEach(section => section.classList.add('hidden'));
+                                        
+                    // Show target section
+                    document.getElementById(`${targetSection}-section`).classList.remove('hidden');
+                });
+            });
+        }
+
+        // Busca
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            currentSearch = searchTerm;
+                        
+            if (searchTerm.trim() === '') {
+                filteredCables = [...allCables];
+            } else {
+                filteredCables = allCables.filter(cable => {
+                    return cable.id_patrimonio.toLowerCase().includes(searchTerm) ||
+                           cable.filial.toLowerCase().includes(searchTerm) ||
+                           cable.bitola.toLowerCase().includes(searchTerm) ||
+                           cable.classe_tensao.toLowerCase().includes(searchTerm) ||
+                           cable.status.toLowerCase().includes(searchTerm);
+                });
+            }
+                        
+            currentPage = 1;
+            applyCurrentFilters(); // Re-apply filters on top of search results
+            updateTable();
+            updateKPIs();
+            updateCharts();
+            updateAlerts();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            currentSearch = '';
+            // Reset filteredCables to allCables before applying filters
+            filteredCables = [...allCables]; 
+            currentPage = 1;
+            applyCurrentFilters(); // Re-apply filters to the full dataset
+            updateTable();
+            updateKPIs();
+            updateCharts();
+            updateAlerts();
+        }
+
+        // Filtros
+        function setupFilters() {
+            const filterElements = [
+                'filter-filial',
+                'filter-bitola', 
+                'filter-metragem',
+                'filter-classe',
+                'filter-status'
+            ];
+
+            filterElements.forEach(filterId => {
+                document.getElementById(filterId).addEventListener('change', () => {
+                    currentPage = 1;
+                    applyFilters();
+                });
+            });
+        }
+
+        function applyCurrentFilters() {
+            const filters = {
+                filial: document.getElementById('filter-filial').value,
+                bitola: document.getElementById('filter-bitola').value,
+                metragem: document.getElementById('filter-metragem').value,
+                classe_tensao: document.getElementById('filter-classe').value,
+                status: document.getElementById('filter-status').value
+            };
+
+            // Start filtering from allCables if no search, or from search results if search is active
+            let cablesToFilter = currentSearch ? 
+                allCables.filter(cable => {
+                    return cable.id_patrimonio.toLowerCase().includes(currentSearch) ||
+                           cable.filial.toLowerCase().includes(currentSearch) ||
+                           cable.bitola.toLowerCase().includes(currentSearch) ||
+                           cable.classe_tensao.toLowerCase().includes(currentSearch) ||
+                           cable.status.toLowerCase().includes(currentSearch);
+                }) : [...allCables];
+
+            filteredCables = cablesToFilter.filter(cable => {
+                return Object.keys(filters).every(key => {
+                    if (!filters[key]) return true; // If filter is empty, don't filter by this key
+                                        
+                    if (key === 'metragem') {
+                        return cable.metros === parseFloat(filters[key]);
+                    }
+                                        
+                    return cable[key] === filters[key];
+                });
+            });
+        }
+
+        function applyFilters() {
+            applyCurrentFilters();
+            updateTable();
+            updateKPIs();
+            updateCharts();
+            updateAlerts();
+        }
+
+        function clearAllFilters() {
+            document.getElementById('filter-filial').value = '';
+            document.getElementById('filter-bitola').value = '';
+            document.getElementById('filter-metragem').value = '';
+            document.getElementById('filter-classe').value = '';
+            document.getElementById('filter-status').value = '';
+                        
+            // Reset filteredCables based on current search, or to allCables if no search
+            filteredCables = currentSearch ? 
+                allCables.filter(cable => {
+                    return cable.id_patrimonio.toLowerCase().includes(currentSearch) ||
+                           cable.filial.toLowerCase().includes(currentSearch) ||
+                           cable.bitola.toLowerCase().includes(currentSearch) ||
+                           cable.classe_tensao.toLowerCase().includes(currentSearch) ||
+                           cable.status.toLowerCase().includes(currentSearch);
+                }) : [...allCables];
+                        
+            currentPage = 1;
+            updateTable();
+            updateKPIs();
+            updateCharts();
+            updateAlerts();
+        }
+
+        // Paginação
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredCables.length / itemsPerPage);
+            const newPage = currentPage + direction;
+                        
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                updateTable();
+            }
+        }
+
+        // Atualizar tabela
+        function updateTable() {
+            const tbody = document.getElementById('stock-table-body');
+            const totalPages = Math.ceil(filteredCables.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentData = filteredCables.slice(startIndex, endIndex);
+                        
+            tbody.innerHTML = '';
+            currentData.forEach(cable => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cable.id_patrimonio}</td>
+                    <td>${cable.filial}</td>
+                    <td>${cable.bitola}</td>
+                    <td>${cable.metros}m</td>
+                    <td>${cable.classe_tensao}</td>
+                    <td><span class="status-badge status-${cable.status.toLowerCase().replace('ã', 'a').replace('í', 'i')}">${cable.status}</span></td>
+                    <td><span class="health-badge ${cable.saude_ia}" title="${cable.saude_ia}"></span></td>
+                `;
+                
+                row.addEventListener('click', () => openCableModal(cable));
+                tbody.appendChild(row);
+            });
+
+            // Atualizar informações da paginação
+            document.getElementById('table-info').textContent = 
+                `Mostrando ${startIndex + 1}-${Math.min(endIndex, filteredCables.length)} de ${filteredCables.length} registros`;
+                        
+            document.getElementById('page-info').textContent = 
+                `Página ${currentPage} de ${totalPages || 1}`;
+                        
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // Atualizar KPIs
+        function updateKPIs() {
+            const total = filteredCables.length;
+            const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;
+            const locados = filteredCables.filter(c => c.status === 'Locados').length;
+            const extraviados = filteredCables.filter(c => c.status === 'Extraviados').length;
+            const manutencao = filteredCables.filter(c => c.status === 'Manutenção').length;
+                        
+            const saudeVerde = filteredCables.filter(c => c.saude_ia === 'Verde').length;
+            const saudeAmarela = filteredCables.filter(c => c.saude_ia === 'Amarelo').length;
+            const saudeVermelha = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;
+                        
+            const totalMetros = filteredCables.reduce((sum, cable) => sum + cable.metros, 0);
+
+            // Determinar cor da saúde da frota
+            let saudeColor = 'verde';
+            if (saudeVermelha > saudeVerde * 0.2) saudeColor = 'vermelho';
+            else if (saudeAmarela > saudeVerde * 0.3) saudeColor = 'amarelo';
+
+            const kpisContainer = document.getElementById('kpis-container');
+            kpisContainer.innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-title">Saúde da Frota</div>
+                    <div class="health-indicator health-${saudeColor}">
+                        ${saudeColor === 'verde' ? '✓' : saudeColor === 'amarelo' ? '⚠' : '✗'}
+                    </div>
+                    <div class="kpi-description">
+                        Verde: ${saudeVerde} | Amarelo: ${saudeAmarela} | Vermelho: ${saudeVermelha}
+                    </div>
+                </div>
+                                
+                <div class="kpi-card">
+                    <div class="kpi-title">Estoque Total</div>
+                    <div class="kpi-value" style="color: #F38028;">${total}</div>
+                    <div class="kpi-description">Cabos no sistema</div>
+                </div>
+                                
+                <div class="kpi-card">
+                    <div class="kpi-title">Disponíveis</div>
+                    <div class="kpi-value" style="color: #28a745;">${disponivel}</div>
+                    <div class="kpi-description">${total > 0 ? ((disponivel/total)*100).toFixed(1) : 0}% do total</div>
+                </div>
+                                
+                <div class="kpi-card">
+                    <div class="kpi-title">Em Uso</div>
+                    <div class="kpi-value" style="color: #17a2b8;">${locados}</div>
+                    <div class="kpi-description">${total > 0 ? ((locados/total)*100).toFixed(1) : 0}% do total</div>
+                </div>
+                                
+                <div class="kpi-card">
+                    <div class="kpi-title">Extravios</div>
+                    <div class="alert-icon">⚠️</div>
+                    <div class="kpi-value" style="color: #dc3545;">${extraviados}</div>
+                    <div class="kpi-description">${total > 0 ? ((extraviados/total)*100).toFixed(1) : 0}% do total</div>
+                </div>
+                                
+                <div class="kpi-card">
+                    <div class="kpi-title">Total de Metros</div>
+                    <div class="kpi-value" style="color: #F38028;">${totalMetros.toLocaleString('pt-BR')}</div>
+                    <div class="kpi-description">Metros de cabo</div>
+                </div>
+            `;
+        }
+
+        // Gráficos
+        function updateCharts() {
+            updateStatusChart();
+            updateHealthChart();
+        }
+
+        function updateStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+                        
+            const statusData = {
+                'Disponível': filteredCables.filter(c => c.status === 'Disponível').length,
+                'Locados': filteredCables.filter(c => c.status === 'Locados').length,
+                'Extraviados': filteredCables.filter(c => c.status === 'Extraviados').length,
+                'Manutenção': filteredCables.filter(c => c.status === 'Manutenção').length
+            };
+
+            if (window.statusChart) {
+                window.statusChart.destroy();
+            }
+
+            window.statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusData),
+                    datasets: [{
+                        data: Object.values(statusData),
+                        backgroundColor: [
+                            '#28a745',
+                            '#17a2b8', 
+                            '#dc3545',
+                            '#ffc107'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHealthChart() {
+            const ctx = document.getElementById('healthChart').getContext('2d');
+                        
+            const healthData = {
+                'Verde': filteredCables.filter(c => c.saude_ia === 'Verde').length,
+                'Amarelo': filteredCables.filter(c => c.saude_ia === 'Amarelo').length,
+                'Vermelho': filteredCables.filter(c => c.saude_ia === 'Vermelho').length
+            };
+
+            if (window.healthChart) {
+                window.healthChart.destroy();
+            }
+
+            window.healthChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(healthData),
+                    datasets: [{
+                        label: 'Cabos',
+                        data: Object.values(healthData),
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Alertas
+        function updateAlerts() {
+            const alerts = checkAlerts();
+            const container = document.getElementById('alerts-container');
+                        
+            if (alerts.length === 0) {
+                container.innerHTML = '';
+                document.getElementById('notification-count').textContent = '0';
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert alert-${alert.type}">
+                    <div class="alert-message">
+                        <strong>${alert.title}</strong><br>
+                        ${alert.message}
+                    </div>
+                    <button class="alert-action" onclick="${alert.action}">
+                        ${alert.buttonText}
+                    </button>
+                </div>
+            `).join('');
+            // Atualizar contador de notificações
+            document.getElementById('notification-count').textContent = alerts.length;
+        }
+
+        function checkAlerts() {
+            const alerts = [];
+                        
+            // Verificar cabos com saúde crítica
+            const criticalCables = filteredCables.filter(c => c.saude_ia === 'Vermelho');
+            if (criticalCables.length > 0) {
+                alerts.push({
+                    type: 'critical',
+                    title: 'Atenção Crítica',
+                    message: `${criticalCables.length} cabos precisam de atenção imediata`,
+                    buttonText: 'Ver Detalhes',
+                    action: `showCriticalCables()`
+                });
+            }
+                        
+            // Verificar extravios
+            const lostCables = filteredCables.filter(c => c.status === 'Extraviados');
+            if (lostCables.length > 5) { // Threshold for warning
+                alerts.push({
+                    type: 'warning',
+                    title: 'Extravios Detectados',
+                    message: `${lostCables.length} cabos extraviados detectados`,
+                    buttonText: 'Investigar',
+                    action: `showLostCables()`
+                });
+            }
+
+            // Verificar baixo estoque disponível (alta utilização)
+            const totalCables = filteredCables.length;
+            const availableCables = filteredCables.filter(c => c.status === 'Disponível').length;
+            // Avoid division by zero
+            const utilizationRate = totalCables > 0 ? (totalCables - availableCables) / totalCables : 0; 
+            if (utilizationRate > 0.8 && totalCables > 0) { // If more than 80% are in use/lost/maintenance
+                alerts.push({
+                    type: 'info',
+                    title: 'Alta Utilização',
+                    message: `Taxa de utilização em ${(utilizationRate * 100).toFixed(1)}% - considere expandir frota`,
+                    buttonText: 'Analisar',
+                    action: `analyzeUtilization()`
+                });
+            }
+                        
+            return alerts;
+        }
+
+        function showCriticalCables() {
+            // Simulate applying filter for critical cables
+            document.getElementById('filter-status').value = ''; // Clear status filter first
+            // In a real app, you'd set a filter for saude_ia = 'Vermelho'
+            alert('Mostrando cabos com saúde crítica. Funcionalidade completa em desenvolvimento.');
+            // For demonstration, let's just filter by status 'Manutenção' as a proxy
+            document.getElementById('filter-status').value = 'Manutenção';
+            applyFilters();
+        }
+
+        function showLostCables() {
+            document.getElementById('filter-status').value = 'Extraviados';
+            applyFilters();
+            alert('Filtro aplicado para mostrar cabos extraviados.');
+        }
+
+        function analyzeUtilization() {
+            alert('Abrindo análise de utilização. Funcionalidade completa em desenvolvimento.');
+        }
+
+        // Exportação
+        function exportToCSV() {
+            const headers = ['ID Patrimônio', 'Filial', 'Bitola', 'Metros', 'Classe de Tensão', 'Status', 'Saúde IA'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredCables.map(cable => [
+                    cable.id_patrimonio,
+                    cable.filial,
+                    cable.bitola,
+                    cable.metros,
+                    cable.classe_tensao,
+                    cable.status,
+                    cable.saude_ia
+                ].map(item => `"${String(item).replace(/"/g, '""')}"`).join(',')) // Handle commas and quotes in data
+            ].join('\n');
+                        
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_cabos_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            alert('Dados exportados para CSV com sucesso!');
+        }
+
+        // Relatórios
+        function generateReport(type) {
+            const reportTypes = {
+                'monthly': 'Relatório Mensal',
+                'maintenance': 'Relatório de Manutenção',
+                'utilization': 'Taxa de Utilização',
+                'losses': 'Perdas e Extravios',
+                'health': 'Saúde da Frota',
+                'financial': 'Análise Financeira'
+            };
+            alert(`Gerando ${reportTypes[type]}...\n\nEsta funcionalidade estará disponível em breve com análises detalhadas e exportação em PDF.`);
+        }
+
+        // Modal do cabo
+        function openCableModal(cable) {
+            const modal = document.getElementById('cable-modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+            
+            title.textContent = `Detalhes do Cabo: ${cable.id_patrimonio}`;
+            
+            body.innerHTML = `
+                <div class="modal-section">
+                    <h4>Especificações</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">ID Patrimônio</div>
+                            <div class="detail-value">${cable.id_patrimonio}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Filial</div>
+                            <div class="detail-value">${cable.filial}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Bitola</div>
+                            <div class="detail-value">${cable.bitola}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Metragem</div>
+                            <div class="detail-value">${cable.metros}m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Classe de Tensão</div>
+                            <div class="detail-value">${cable.classe_tensao}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                <span class="status-badge status-${cable.status.toLowerCase().replace('ã', 'a').replace('í', 'i')}">${cable.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Farol de Saúde da IA</div>
+                        <div class="detail-value">
+                            <span class="health-badge ${cable.saude_ia}"></span> ${cable.saude_ia}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h4>Histórico de Uso</h4>
+                    <ul class="history-list">
+                        ${cable.historico_uso.length > 0 ? cable.historico_uso.map(uso => `
+                            <li class="history-item">
+                                <strong>Data:</strong> ${new Date(uso.data).toLocaleDateString('pt-BR')}<br>
+                                <strong>Projeto:</strong> ${uso.projeto}<br>
+                                <strong>Duração:</strong> ${uso.duracao}
+                            </li>
+                        `).join('') : '<li class="history-item">Nenhum histórico de uso registrado.</li>'}
+                    </ul>
+                </div>
+                
+                <div class="modal-section">
+                    <h4>Histórico de Manutenção</h4>
+                    <ul class="history-list">
+                        ${cable.historico_manutencao.length > 0 ? cable.historico_manutencao.map(manutencao => `
+                            <li class="history-item">
+                                <strong>Data:</strong> ${new Date(manutencao.data).toLocaleDateString('pt-BR')}<br>
+                                <strong>Tipo:</strong> ${manutencao.tipo}<br>
+                                <strong>Custo:</strong> ${manutencao.custo}
+                            </li>
+                        `).join('') : '<li class="history-item">Nenhum histórico de manutenção registrado.</li>'}
+                    </ul>
+                </div>
+                
+                <div class="edit-section">
+                    <h4>Ajustar Ficha do Projeto</h4>
+                    <textarea class="edit-input" placeholder="Digite observações sobre o cabo..."></textarea>
+                    <button class="save-button" onclick="saveNotes()">Salvar Observações</button>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeCableModal() {
+            document.getElementById('cable-modal').classList.add('hidden');
+        }
+
+        function saveNotes() {
+            alert('Observações salvas com sucesso!');
+        }
+
+        // Chat Modal
+        function openChatModal() {
+            document.getElementById('chat-modal').classList.remove('hidden');
+        }
+
+        function closeChatModal() {
+            document.getElementById('chat-modal').classList.add('hidden');
+        }
+
+        function getAIResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+                        
+            if (message.includes('estoque') || message.includes('total') || message.includes('disponibilidade')) {
+                const total = filteredCables.length;
+                const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;
+                return `Atualmente temos ${total} cabos no sistema, sendo ${disponivel} disponíveis para uso. A taxa de disponibilidade é de ${total > 0 ? ((disponivel/total)*100).toFixed(1) : 0}%.`;
+            }
+                        
+            if (message.includes('extraviado') || message.includes('perdido') || message.includes('perdas')) {
+                const lost = filteredCables.filter(c => c.status === 'Extraviados').length;
+                const percentage = filteredCables.length > 0 ? ((lost/filteredCables.length)*100).toFixed(1) : 0;
+                return `Temos ${lost} cabos extraviados (${percentage}% do total). Recomendo uma auditoria nas filiais com maior incidência e implementação de controles de rastreamento mais rigorosos.`;
+            }
+                        
+            if (message.includes('manutenção') || message.includes('manutencao') || message.includes('critico')) {
+                const maintenance = filteredCables.filter(c => c.status === 'Manutenção').length;
+                const critical = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;
+                return `${maintenance} cabos estão em manutenção e ${critical} cabos têm saúde crítica. Recomendo priorizar os cabos críticos para evitar falhas em campo.`;
+            }
+                        
+            if (message.includes('saúde') || message.includes('saude') || message.includes('farol')) {
+                const verde = filteredCables.filter(c => c.saude_ia === 'Verde').length;
+                const amarelo = filteredCables.filter(c => c.saude_ia === 'Amarelo').length;
+                const vermelho = filteredCables.filter(c => c.saude_ia === 'Vermelho').length;
+                return `Status de saúde da frota: ${verde} cabos em bom estado (Verde), ${amarelo} com atenção necessária (Amarelo), e ${vermelho} críticos (Vermelho). Foco nos cabos críticos é prioritário.`;
+            }
+                        
+            if (message.includes('utilização') || message.includes('utilizacao') || message.includes('uso')) {
+                const locados = filteredCables.filter(c => c.status === 'Locados').length;
+                const disponivel = filteredCables.filter(c => c.status === 'Disponível').length;
+                const totalForUtilization = locados + disponivel;
+                const utilizacao = totalForUtilization > 0 ? ((locados/totalForUtilization)*100).toFixed(1) : 0;
+                return `Taxa de utilização atual: ${utilizacao}%. ${locados} cabos em uso e ${disponivel} disponíveis. ${utilizacao > 80 ? 'Considere expandir a frota.' : 'Capacidade adequada.'}`;
+            }
+                        
+            if (message.includes('custo') || message.includes('financeiro') || message.includes('roi')) {
+                return `Posso ajudar com análises financeiras detalhadas. As principais métricas incluem: custos de manutenção, ROI por projeto, e otimização de investimentos. Gostaria de focar em algum aspecto específico?`;
+            }
+                        
+            if (message.includes('relatório') || message.includes('relatorio')) {
+                return `Posso gerar diversos relatórios: mensal, manutenção, utilização, perdas, saúde da frota e análise financeira. Qual relatório você gostaria de gerar?`;
+            }
+                        
+            return `Como especialista em gestão de cabos, posso ajudá-lo com informações sobre:
+            \n• Estoque e disponibilidade
+            \n• Análise de saúde da frota
+            \n• Manutenção preventiva
+            \n• Controle de extravios
+            \n• Otimização de custos
+            \n• Relatórios personalizados
+            \n\nSobre o que você gostaria de saber?`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const messagesContainer = document.getElementById('chat-messages');
+                        
+            if (input.value.trim()) {
+                // Adicionar mensagem do usuário
+                const userMessage = document.createElement('div');
+                userMessage.className = 'chat-message user';
+                userMessage.textContent = input.value;
+                messagesContainer.appendChild(userMessage);
+                                
+                const userText = input.value;
+                input.value = '';
+                                
+                // Simular resposta da IA
+                setTimeout(() => {
+                    const aiMessage = document.createElement('div');
+                    aiMessage.className = 'chat-message ai';
+                    aiMessage.textContent = getAIResponse(userText);
+                    messagesContainer.appendChild(aiMessage);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 1000);
+                                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Notificações
+        function toggleNotifications() {
+            alert('Central de notificações em desenvolvimento. Você receberá alertas sobre:\n\n• Cabos com manutenção vencida\n• Extravios detectados\n• Saúde crítica da frota\n• Projetos com atraso na devolução');
+        }
+
+        // Enter para enviar mensagem
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            document.getElementById('search-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+
+        // Fechar modais clicando fora
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeCableModal();
+                closeChatModal();
+            }
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            allCables = generateCablesData();
+            filteredCables = [...allCables];
+                        
+            setupNavigation();
+            setupFilters();
+            updateTable();
+            updateKPIs();
+            updateCharts();
+            updateAlerts();
+        });
+    </script>
+</body>
+</html>
